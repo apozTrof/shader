@@ -1,0 +1,8 @@
+uniform sampler2D LookupSampler;
+
+varying float NdotV;
+
+void main(void)
+{
+	gl_FragColor = texture(LookupSampler,vec2(NdotV,0));
+}

@@ -1,0 +1,39 @@
+//[BONUS] MovingNoise : Fragment shader
+
+varying vec3 position;
+
+uniform float Time;
+uniform sampler2D Texture;
+
+float random(float p)
+{
+  return fract(sin(p)*10000.);
+}
+
+float noise(vec3 p)
+{
+  return random(p.x + p.y*10000. + p.z*5000.);
+}
+
+vec3 sw(vec3 p) {return vec3( floor(p.x) , floor(p.y), floor(p.z) );}
+vec3 se(vec3 p) {return vec3( ceil(p.x)  , floor(p.y), ceil(p.z) );}
+vec3 nw(vec3 p) {return vec3( floor(p.x) , ceil(p.y), floor(p.z)  );}
+vec3 ne(vec3 p) {return vec3( ceil(p.x)  , ceil(p.y), ceil(p.z)  );}
+
+float smoothNoise(vec3 p)
+{
+  vec3 inter = smoothstep(0., 1., fract(p));
+  float s = mix(noise(sw(p)), noise(se(p)), inter.x);
+  float n = mix(noise(nw(p)), noise(ne(p)), inter.x);
+  return mix(s, n, inter.y);
+  return noise(nw(p));
+}
+
+
+void main() 
+{
+  vec3 p = position * 6.;
+  float brightness = smoothNoise(p - Time);
+  vec4 texel = texture2D(Texture, gl_TexCoord[0].st);
+  gl_FragColor = vec4(vec3(brightness) * texel, 1.);
+}

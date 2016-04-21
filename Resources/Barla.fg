@@ -1,0 +1,15 @@
+//Barla (X-Toon) : Fragment shader
+
+//2D Texture sampler
+uniform sampler2D LookUpSampler;
+
+//Variables from Barla vertex shader (Barla.vx)
+varying float NdotL;
+varying float NdotV;
+
+void main(void)
+{
+	gl_FragColor = texture(LookUpSampler,
+							vec2(NdotL,1.0-pow(NdotV,2.0))
+							);
+} 

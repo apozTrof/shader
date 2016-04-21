@@ -1,0 +1,53 @@
+//MultiTexture : Fragment shader
+
+uniform sampler2D TextureDay, TextureNight;	//Day&Night textures
+uniform sampler2D MaskSpec;					//Specular mask
+
+varying vec3 ecPosition, N;
+
+void main (void)
+{
+	/////// Texture coordinates ///////
+	vec4 texelD, texelN, texelS;
+	texelD = texture2D(TextureDay, gl_TexCoord[0].st);
+	texelN = texture2D(TextureNight, gl_TexCoord[0].st);
+	texelS = texture2D(MaskSpec, gl_TexCoord[0].st);
+
+
+	/////// Illumination ///////
+	//Vision vector
+	vec3 V = normalize(-ecPosition);
+	
+	//Incident lighting
+	vec3 L = normalize(gl_LightSource[0].position.xyz - ecPosition);
+
+	//Lambert term
+	float LambertReflec = max(dot(L,normalize(N)), 0.0);
+
+	//Reflected light vector
+	vec3 R = normalize(-reflect(L,N));
+
+	//Ambient color
+	vec4 I_amb = gl_FrontLightProduct[0].ambient;
+
+	//Diffuse color
+	vec4 I_diff = texelD * LambertReflec 
+				+ 0.5 * gl_LightSource[0].diffuse 
+					  * (texelN * (1 - LambertReflec));
+	I_diff = clamp(I_diff, 0.0, 1.0);	//Must be ranged between 0 and 1
+
+	//Specular color
+	vec4 I_spec = texelS * (gl_FrontLightProduct[0].specular 
+					* pow(
+							max(dot(R,V), 0.0),
+							gl_FrontMaterial.shininess
+						));
+	I_spec = clamp(I_spec, 0.0, 1.0);	//Must be ranged between 0 and 1
+
+	//Earth halo
+	float powTerm = pow(1 - dot(V,N), 3);
+	vec4 halo = 3 * vec4(0.3,0.7,1.1,1.0) * max(powTerm, 0.0) * LambertReflec;
+	halo = clamp(halo, 0.0, 1.0);	//Must be ranged between 0 and 1
+
+	gl_FragColor = I_amb + I_diff + I_spec + halo;
+}

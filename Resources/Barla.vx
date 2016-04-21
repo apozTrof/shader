@@ -1,0 +1,25 @@
+//Barla (X-Toon) : Vertex shader
+
+//Variables needed for Barla fragment shader
+varying float NdotL;
+varying float NdotV;
+
+void main(void)
+{
+	//Compute the opposite of View vector (normalized)
+	vec3 ecPosition = vec3(gl_ModelViewMatrix * gl_Vertex);
+	vec3 viewVec = normalize(-ecPosition);
+
+	//Normal vector
+	vec3 normal = normalize(gl_NormalMatrix * gl_Normal);
+
+	//Light vector
+	vec3 lightVec = normalize(vec3(gl_LightSource[0].position -
+									ecPosition)
+							);
+	
+	NdotL = max(dot(lightVec,normal),0.0);
+	NdotV = max(dot(viewVec,normal),0.0);
+
+	gl_Position = ftransform();
+} 

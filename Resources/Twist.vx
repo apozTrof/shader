@@ -1,0 +1,33 @@
+//Twist : Vertex shader
+
+// Twisting parameter
+attribute float tparam;
+
+// Phong parameters
+varying vec3 ecPosition;	//Eye coordinates
+varying vec3 N;				//Normal vector
+
+void main(void)
+{
+	
+	/////// TWIST VERTEX ///////
+	vec4 vtx = vec4(gl_Vertex);
+	N = vec3(gl_Normal);
+
+	//Vertex transformation
+	vtx.x =	vtx.x * cos(vtx.y * tparam) + vtx.z * sin(vtx.y * tparam);
+	vtx.y = vtx.y;
+	vtx.z = vtx.z * cos(vtx.y * tparam) - vtx.x * sin(vtx.y * tparam);
+	
+	//Normal transformation
+	N.x = N.x * cos(vtx.y * tparam) + N.z * sin(vtx.y * tparam);
+	N.z = N.z * cos(vtx.y * tparam) - N.x * sin(vtx.y * tparam);
+	////////////////////////////
+	
+	/////// PHONG SHADING ///////
+	ecPosition = vec3(gl_ModelViewMatrix * vtx);
+	N = normalize(gl_NormalMatrix * N);
+	////////////////////////////
+
+	gl_Position = gl_ModelViewProjectionMatrix * vtx;
+}
